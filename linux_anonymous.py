@@ -5,6 +5,7 @@ import time
 import webbrowser
 import requests
 import subprocess
+import os
 
 
 class Gui:
@@ -15,6 +16,7 @@ class Gui:
         self.port_list = set()
         self.name = ''
         self.message = ''
+        self.s_bind = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s_connect = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.quiting = False
         self.quiting_check = 'ok'
@@ -279,6 +281,8 @@ class Gui:
                 except BrokenPipeError:
                     return "break"
                     pass
+        else:
+            return "break"
 
     def sending_messages_press(self, event):
         message = str(self.text_send.get("1.0", "end").strip())
@@ -400,7 +404,8 @@ class Gui:
             ip = self.ip_entry2.get()
             port = self.port_entry2.get()
 
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.ip_list.clear()
+            self.port_list.clear()
 
             if len(str(ip)) <= 15 and len(str(ip)) >= 7 and len(str(port)) <= 5 and len(str(port)) >= 4:
 
@@ -408,7 +413,7 @@ class Gui:
                 self.port_entry2.configure(state=DISABLED)
                 self.button_bind.configure(state=DISABLED)
 
-                s.bind((str(ip), int(port)))
+                self.s_bind.bind((str(ip), int(port)))
                 time.sleep(1)
 
                 self.messages.configure(state=NORMAL)
@@ -416,7 +421,7 @@ class Gui:
                 self.messages.see(END)
                 self.messages.configure(state=DISABLED)
 
-                s.listen(1)
+                self.s_bind.listen(1)
                 time.sleep(1)
 
                 if threading.active_count() < 4:
@@ -431,41 +436,58 @@ class Gui:
                     self.messages.see(END)
                     self.messages.configure(state=DISABLED)
 
-                    self.ip_entry2.configure(state=NORMAL)
-                    self.port_entry2.configure(state=NORMAL)
+                    self.button_bind.pack_forget()
+                    self.button_bind = Button(self.frame_bind, text="Unbind", width=6, command=self.socket_binding_stop)
+                    self.button_bind.pack(side=LEFT)
                     self.button_bind.configure(state=NORMAL)
 
-                    b_data = ''
+                    b_data, address = self.s_bind.accept()
 
-                    if self.quiting_check == 'ok':
-                        b_data, address = s.accept()
+                    if not self.quiting:
                         self.messages.configure(state=NORMAL)
-                        self.messages.insert(INSERT, '->clear()')
+                        self.messages.delete("1.0", "end")
                         self.messages.insert(INSERT, 'Connection established from ' + str(address) + '.\n')
-                        self.messages.insert(INSERT, 'All messages are now send.\n')
                         self.messages.see(END)
                         self.messages.configure(state=DISABLED)
 
                     while not self.quiting:
                         data = b_data.recv(1024)
-                        self.messages.configure(state=NORMAL)
-                        self.messages.insert(INSERT, data.decode('utf-8') + '\n')
-                        self.messages.see(END)
-                        self.messages.configure(state=DISABLED)
+                        if data:
+                            self.messages.configure(state=NORMAL)
+                            self.messages.insert(INSERT, data.decode('utf-8') + '\n')
+                            self.messages.see(END)
+                            self.messages.configure(state=DISABLED)
 
-                else:
-                    self.quiting = True
-                    self.quiting_check = ''
-                    for x in self.ip_list:
-                        for y in self.port_list:
-                            socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((str(x), int(y)))
-                            s.close()
+                        else:
+                            self.messages.configure(state=NORMAL)
+                            self.messages.insert(INSERT, 'Disconnected.' + '\n')
+                            self.messages.insert(INSERT, 'Connection is over.' + '\n')
+                            self.messages.see(END)
+                            self.messages.configure(state=DISABLED)
+
+                            self.button_bind.pack_forget()
+                            self.button_bind = Button(self.frame_bind, text="Bind", width=6,
+                                                      command=self.socket_binding_thread)
+                            self.button_bind.bind('<Enter>', lambda _: self.tip_button_bind.place(x=160, y=330))
+                            self.button_bind.bind('<Leave>', lambda _: self.tip_button_bind.place_forget())
+                            self.button_bind.pack(side=LEFT)
+                            self.ip_entry2.configure(state=NORMAL)
+                            self.port_entry2.configure(state=NORMAL)
+                            break
+
+                    self.s_bind.close()
+
                     self.messages.configure(state=NORMAL)
-                    self.messages.insert(INSERT, 'Unbind.\n')
+                    self.messages.insert(INSERT, 'Socket closed.\n')
                     self.messages.see(END)
                     self.messages.configure(state=DISABLED)
 
-                    return self.socket_binding()
+                    if '[closed]' in str(self.s_bind):
+                        self.s_bind = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+                else:
+                    print('Threading Error. To avoid this, restart the program.')
+                    pass
 
         except OSError:
             time.sleep(1)
@@ -477,12 +499,50 @@ class Gui:
         thread = threading.Thread(target=self.socket_binding)
         thread.start()
 
+    def socket_binding_stop(self):
+        self.quiting = True
+        stop_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        for x in self.ip_list:
+            for y in self.port_list:
+                stop_socket.connect((str(x), int(y)))
+
+        stop_socket.close()
+
+        self.button_bind.pack_forget()
+        self.button_bind = Button(self.frame_bind, text="Bind", width=6, command=self.socket_binding_thread)
+        self.button_bind.bind('<Enter>', lambda _: self.tip_button_bind.place(x=160, y=330))
+        self.button_bind.bind('<Leave>', lambda _: self.tip_button_bind.place_forget())
+        self.button_bind.pack(side=LEFT)
+        self.ip_entry2.configure(state=NORMAL)
+        self.port_entry2.configure(state=NORMAL)
+
+        self.s_bind = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
     def socket_connect(self):
         try:
+            self.s_connect = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
             ip = self.ip_entry.get()
             port = self.port_entry.get()
 
-            self.s_connect.connect((str(ip), int(port)))
+            if len(str(ip)) <= 15 and len(str(ip)) >= 7 and len(str(port)) <= 5 and len(str(port)) >= 4:
+
+                self.s_connect.connect((str(ip), int(port)))
+
+                self.ip_entry.configure(state=DISABLED)
+                self.port_entry.configure(state=DISABLED)
+
+                self.button_connect.pack_forget()
+                self.button_connect = Button(self.frame_connect, text="UnConnect", width=6, command=self.socket_connect_stop)
+                self.button_connect.pack(side=LEFT)
+
+                self.messages.configure(state=NORMAL)
+                self.messages.insert(INSERT, 'Messages are now send.\n')
+                self.messages.see(END)
+                self.messages.configure(state=DISABLED)
+
+        except ValueError:
+            pass
 
         except ConnectionRefusedError:
             self.messages.configure(state=NORMAL)
@@ -490,21 +550,43 @@ class Gui:
             self.messages.see(END)
             self.messages.configure(state=DISABLED)
 
+        except OSError:
+            pass
+
     def socket_connect_thread(self):
         thread = threading.Thread(target=self.socket_connect)
         thread.start()
+
+    def socket_connect_stop(self):
+        self.s_connect.close()
+        time.sleep(0.2)
+
+        self.messages.configure(state=NORMAL)
+        self.messages.insert(INSERT, 'Disconnected.' + '\n')
+        self.messages.insert(INSERT, 'Connection is over.' + '\n')
+        self.messages.see(END)
+        self.messages.configure(state=DISABLED)
+
+        self.button_connect.pack_forget()
+        self.button_connect = Button(self.frame_connect, text="Connect", width=6, command=self.socket_connect_thread)
+        self.button_connect.bind('<Enter>', lambda _: self.tip_button_connect.place(x=100, y=330))
+        self.button_connect.bind('<Leave>', lambda _: self.tip_button_connect.place_forget())
+        self.button_connect.pack(side=LEFT)
+
+        self.ip_entry.configure(state=NORMAL)
+        self.port_entry.configure(state=NORMAL)
 
 
 def gui():
     root = Tk()
     Gui(root)
     root.mainloop()
+    os._exit(0)
 
 
 def main():
     thread_gui = threading.Thread(target=gui)
     thread_gui.start()
-
 
 if __name__ == '__main__':
     try:
@@ -514,6 +596,6 @@ if __name__ == '__main__':
         pass
 
 
-#  Problems
+# Problems
 # Except Keyboard Interrupt
-# Close whole program also when socket is bind etc..
+
