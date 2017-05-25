@@ -33,7 +33,7 @@ class Gui:
         self.frame_name.pack()
 
         self.label = Label(self.frame_name, text="Your name must be from 2 to 10 characters long.")
-        self.label.pack(side=TOP)
+        self.label.pack()
 
         self.label_name = Label(self.frame_name, text="Enter your name: ")
         self.label_name.pack(side=LEFT)
@@ -64,7 +64,7 @@ class Gui:
         self.scrollbar.config(command=self.messages.yview)
 
         # Welcome message
-        self.welcome = "Welcome to the chat !\nSpecial commands that you can use:\n->clear() = Clears the screen\n->tips_off() = Turn all tips off\n->tips_on() = Turn all tips on\n->myip() = Shows your ip addresses\n->help() = Open documentation\n->exit() = Close whole connection\n->commands() = Print all commands you can use\n"
+        self.welcome = "Welcome to the chat !\nSpecial commands that you can use:\n->clear() = Clears the screen\n->tips_off() = Turn all tips off\n->tips_on() = Turn all tips on\n->myip() = Shows your ip addresses\n->help() = Open documentation\n->commands() = Print all commands you can use\n"
         self.messages.configure(state=NORMAL)
         self.messages.insert(INSERT, self.welcome)
         self.messages.configure(state=DISABLED)
@@ -192,7 +192,6 @@ class Gui:
                 self.button_bind.unbind('<Enter>')
                 self.button_bind.unbind('<Leave>')
 
-                self.messages.insert(INSERT, self.message + "\n")
                 self.messages.insert(INSERT, 'Tips are off.' + "\n")
                 self.messages.see(END)
                 self.messages.configure(state=DISABLED)
@@ -213,7 +212,6 @@ class Gui:
                 self.button_bind.bind('<Enter>', lambda _: self.tip_button_bind.place(x=160, y=330))
                 self.button_bind.bind('<Leave>', lambda _: self.tip_button_bind.place_forget())
 
-                self.messages.insert(INSERT, self.message + "\n")
                 self.messages.insert(INSERT, 'Tips are on.' + "\n")
                 self.messages.see(END)
                 self.messages.configure(state=DISABLED)
@@ -264,7 +262,7 @@ class Gui:
             elif "->commands()" in self.message:
                 self.text_send.delete("1.0", "end")
                 self.messages.insert(INSERT,
-                                     'Special commands that you can use:\n->clear() = Clears the screen\n->tips_off() = Turn all tips off\n->tips_on() = Turn all tips on\n->myip() = Shows your ip addresses\n->help() = Open documentation\n->exit() = Close whole connection\n->commands() = Print all commands you can use\n')
+                                     'Special commands that you can use:\n->clear() = Clears the screen\n->tips_off() = Turn all tips off\n->tips_on() = Turn all tips on\n->myip() = Shows your ip addresses\n->help() = Open documentation\n->commands() = Print all commands you can use\n')
                 self.messages.see(END)
                 self.messages.configure(state=DISABLED)
                 return "break"
@@ -311,7 +309,6 @@ class Gui:
                 self.button_bind.unbind('<Enter>')
                 self.button_bind.unbind('<Leave>')
 
-                self.messages.insert(INSERT, self.message + "\n")
                 self.messages.insert(INSERT, 'Tips are off.' + "\n")
                 self.messages.see(END)
                 self.messages.configure(state=DISABLED)
@@ -332,7 +329,6 @@ class Gui:
                 self.button_bind.bind('<Enter>', lambda _: self.tip_button_bind.place(x=160, y=330))
                 self.button_bind.bind('<Leave>', lambda _: self.tip_button_bind.place_forget())
 
-                self.messages.insert(INSERT, self.message + "\n")
                 self.messages.insert(INSERT, 'Tips are on.' + "\n")
                 self.messages.see(END)
                 self.messages.configure(state=DISABLED)
@@ -377,7 +373,7 @@ class Gui:
             elif "->commands()" in self.message:
                 self.text_send.delete("1.0", "end")
                 self.messages.insert(INSERT,
-                                     'Special commands that you can use:\n->clear() = Clears the screen\n->tips_off() = Turn all tips off\n->tips_on() = Turn all tips on\n->myip() = Shows your ip addresses\n->help() = Open documentation\n->exit() = Close whole connections\n->commands() = Print all commands you can use\n')
+                                     'Special commands that you can use:\n->clear() = Clears the screen\n->tips_off() = Turn all tips off\n->tips_on() = Turn all tips on\n->myip() = Shows your ip addresses\n->help() = Open documentation\n->commands() = Print all commands you can use\n')
                 self.messages.see(END)
                 self.messages.configure(state=DISABLED)
                 return "break"
@@ -401,6 +397,8 @@ class Gui:
     def socket_binding(self):
         try:
 
+            self.quiting = False
+
             ip = self.ip_entry2.get()
             port = self.port_entry2.get()
 
@@ -409,85 +407,95 @@ class Gui:
 
             if len(str(ip)) <= 15 and len(str(ip)) >= 7 and len(str(port)) <= 5 and len(str(port)) >= 4:
 
-                self.ip_entry2.configure(state=DISABLED)
-                self.port_entry2.configure(state=DISABLED)
-                self.button_bind.configure(state=DISABLED)
+                ip_connect = self.ip_entry.get()
+                port_connect = self.port_entry.get()
 
-                self.s_bind.bind((str(ip), int(port)))
-                time.sleep(1)
+                if str(ip) == str(ip_connect) and str(port) == str(port_connect):
+                    pass
 
-                self.messages.configure(state=NORMAL)
-                self.messages.insert(INSERT, 'Socket is bind.\n')
-                self.messages.see(END)
-                self.messages.configure(state=DISABLED)
+                else:
 
-                self.s_bind.listen(1)
-                time.sleep(1)
+                    self.ip_entry2.configure(state=DISABLED)
+                    self.port_entry2.configure(state=DISABLED)
+                    self.button_bind.configure(state=DISABLED)
 
-                if threading.active_count() < 4:
-
-                    self.ip_list.add(str(ip))
-                    self.port_list.add(str(port))
+                    self.s_bind.bind((str(ip), int(port)))
+                    time.sleep(1)
 
                     self.messages.configure(state=NORMAL)
-                    self.messages.insert(INSERT, 'Starting listening for connections.\n')
-                    self.messages.insert(INSERT, 'Waiting for connection on port ' + str(port) + ' on ' + str(
-                        ip) + ' ip address.\n')
+                    self.messages.insert(INSERT, 'Socket is bind.\n')
                     self.messages.see(END)
                     self.messages.configure(state=DISABLED)
 
-                    self.button_bind.pack_forget()
-                    self.button_bind = Button(self.frame_bind, text="Unbind", width=6, command=self.socket_binding_stop)
-                    self.button_bind.pack(side=LEFT)
-                    self.button_bind.configure(state=NORMAL)
+                    self.s_bind.listen(1)
+                    time.sleep(1)
 
-                    b_data, address = self.s_bind.accept()
+                    if threading.active_count() < 4:
 
-                    if not self.quiting:
+                        self.ip_list.add(str(ip))
+                        self.port_list.add(str(port))
+
                         self.messages.configure(state=NORMAL)
-                        self.messages.delete("1.0", "end")
-                        self.messages.insert(INSERT, 'Connection established from ' + str(address) + '.\n')
+                        self.messages.insert(INSERT, 'Starting listening for connections.\n')
+                        self.messages.insert(INSERT, 'Waiting for connection on port ' + str(port) + ' on ' + str(
+                            ip) + ' ip address.\n')
                         self.messages.see(END)
                         self.messages.configure(state=DISABLED)
 
-                    while not self.quiting:
-                        data = b_data.recv(1024)
-                        if data:
+                        self.button_bind.pack_forget()
+                        self.button_bind = Button(self.frame_bind, text="Unbind", width=6, command=self.socket_binding_stop)
+                        self.button_bind.pack(side=LEFT)
+                        self.button_bind.configure(state=NORMAL)
+
+                        b_data, address = self.s_bind.accept()
+
+                        if not self.quiting:
+                            self.button_bind.configure(command=self.socket_binding_stop_connected)
+
                             self.messages.configure(state=NORMAL)
-                            self.messages.insert(INSERT, data.decode('utf-8') + '\n')
+                            self.messages.delete("1.0", "end")
+                            self.messages.insert(INSERT, 'Connection established from ' + str(address) + '.\n')
                             self.messages.see(END)
                             self.messages.configure(state=DISABLED)
 
-                        else:
-                            self.messages.configure(state=NORMAL)
-                            self.messages.insert(INSERT, 'Disconnected.' + '\n')
-                            self.messages.insert(INSERT, 'Connection is over.' + '\n')
-                            self.messages.see(END)
-                            self.messages.configure(state=DISABLED)
+                        while not self.quiting:
+                            data = b_data.recv(1024)
+                            if data:
+                                self.messages.configure(state=NORMAL)
+                                self.messages.insert(INSERT, data.decode('utf-8') + '\n')
+                                self.messages.see(END)
+                                self.messages.configure(state=DISABLED)
 
-                            self.button_bind.pack_forget()
-                            self.button_bind = Button(self.frame_bind, text="Bind", width=6,
-                                                      command=self.socket_binding_thread)
-                            self.button_bind.bind('<Enter>', lambda _: self.tip_button_bind.place(x=160, y=330))
-                            self.button_bind.bind('<Leave>', lambda _: self.tip_button_bind.place_forget())
-                            self.button_bind.pack(side=LEFT)
-                            self.ip_entry2.configure(state=NORMAL)
-                            self.port_entry2.configure(state=NORMAL)
-                            break
+                            else:
+                                self.messages.configure(state=NORMAL)
+                                self.messages.insert(INSERT, 'Disconnected.' + '\n')
+                                self.messages.insert(INSERT, 'Connection is over.' + '\n')
+                                self.messages.see(END)
+                                self.messages.configure(state=DISABLED)
 
-                    self.s_bind.close()
+                                self.button_bind.pack_forget()
+                                self.button_bind = Button(self.frame_bind, text="Bind", width=6,
+                                                          command=self.socket_binding_thread)
+                                self.button_bind.bind('<Enter>', lambda _: self.tip_button_bind.place(x=160, y=330))
+                                self.button_bind.bind('<Leave>', lambda _: self.tip_button_bind.place_forget())
+                                self.button_bind.pack(side=LEFT)
+                                self.ip_entry2.configure(state=NORMAL)
+                                self.port_entry2.configure(state=NORMAL)
+                                break
 
-                    self.messages.configure(state=NORMAL)
-                    self.messages.insert(INSERT, 'Socket closed.\n')
-                    self.messages.see(END)
-                    self.messages.configure(state=DISABLED)
+                        self.s_bind.close()
 
-                    if '[closed]' in str(self.s_bind):
-                        self.s_bind = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        self.messages.configure(state=NORMAL)
+                        self.messages.insert(INSERT, 'Socket closed.\n')
+                        self.messages.see(END)
+                        self.messages.configure(state=DISABLED)
 
-                else:
-                    print('Threading Error. To avoid this, restart the program.')
-                    pass
+                        if '[closed]' in str(self.s_bind):
+                            self.s_bind = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+                    else:
+                        print('Threading Error. To avoid this, restart the program.')
+                        pass
 
         except OSError:
             time.sleep(1)
@@ -518,6 +526,19 @@ class Gui:
 
         self.s_bind = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+    def socket_binding_stop_connected(self):
+        self.quiting = True
+
+        self.button_bind.pack_forget()
+        self.button_bind = Button(self.frame_bind, text="Bind", width=6, command=self.socket_binding_thread)
+        self.button_bind.bind('<Enter>', lambda _: self.tip_button_bind.place(x=160, y=330))
+        self.button_bind.bind('<Leave>', lambda _: self.tip_button_bind.place_forget())
+        self.button_bind.pack(side=LEFT)
+        self.ip_entry2.configure(state=NORMAL)
+        self.port_entry2.configure(state=NORMAL)
+
+        self.s_bind = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
     def socket_connect(self):
         try:
             self.s_connect = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -527,19 +548,28 @@ class Gui:
 
             if len(str(ip)) <= 15 and len(str(ip)) >= 7 and len(str(port)) <= 5 and len(str(port)) >= 4:
 
-                self.s_connect.connect((str(ip), int(port)))
+                ip_bind = self.ip_entry2.get()
+                port_bind = self.port_entry2.get()
 
-                self.ip_entry.configure(state=DISABLED)
-                self.port_entry.configure(state=DISABLED)
+                if str(ip) == str(ip_bind) and str(port) == str(port_bind):
+                    pass
 
-                self.button_connect.pack_forget()
-                self.button_connect = Button(self.frame_connect, text="UnConnect", width=6, command=self.socket_connect_stop)
-                self.button_connect.pack(side=LEFT)
+                else:
+                    self.s_connect.connect((str(ip), int(port)))
 
-                self.messages.configure(state=NORMAL)
-                self.messages.insert(INSERT, 'Messages are now send.\n')
-                self.messages.see(END)
-                self.messages.configure(state=DISABLED)
+                    self.ip_entry.configure(state=DISABLED)
+                    self.port_entry.configure(state=DISABLED)
+
+                    self.button_connect.pack_forget()
+                    self.button_connect = Button(self.frame_connect, text="Disconnect", width=6,
+                                                 command=self.socket_connect_stop)
+                    self.button_connect.pack(side=LEFT)
+
+                    self.messages.configure(state=NORMAL)
+                    self.messages.delete('1.0', 'end')
+                    self.messages.insert(INSERT, 'Messages are now send.\n')
+                    self.messages.see(END)
+                    self.messages.configure(state=DISABLED)
 
         except ValueError:
             pass
@@ -594,8 +624,4 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
         pass
-
-
-# Problems
-# Except Keyboard Interrupt
 
