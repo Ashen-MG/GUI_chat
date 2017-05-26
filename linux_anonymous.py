@@ -60,13 +60,15 @@ class Gui:
         self.messages.configure(state=DISABLED)
         self.messages.pack()
 
+        self.original_color_background = self.messages.cget("background")
+
         self.messages.config(yscrollcommand=self.scrollbar.set)
         self.scrollbar.config(command=self.messages.yview)
 
         # Welcome message
-        self.welcome = "Welcome to the chat !\nSpecial commands that you can use:\n->clear() = Clears the screen\n->tips_off() = Turn all tips off\n->tips_on() = Turn all tips on\n->myip() = Shows your ip addresses\n->help() = Open documentation\n->commands() = Print all commands you can use\n"
+        self.welcome = "Welcome to the chat !\nSpecial commands that you can use:\n->clear() = Clears the screen\n->default_theme() = Default color theme\n->dark_theme() = Dark color theme\n->tips_off() = Turn all tips off\n->tips_on() = Turn all tips on\n->myip() = Shows your ip addresses\n->help() = Open documentation\n->commands() = Print all commands you can use\n"
         self.messages.configure(state=NORMAL)
-        self.messages.insert(INSERT, self.welcome)
+        self.messages.insert("end", self.welcome)
         self.messages.configure(state=DISABLED)
 
         # ---------- Ip addresses, ports and buttons ----------
@@ -77,6 +79,8 @@ class Gui:
 
         self.ip_label = Label(self.frame_connect, text="Ip address: ")
         self.ip_label.pack(side=LEFT)
+
+        self.original_color_text = self.ip_label.cget("foreground")
 
         self.ip_entry = Entry(self.frame_connect, width=14)
         self.ip_entry.bind('<FocusIn>', lambda _: self.tip_ip_connect.pack())
@@ -178,6 +182,70 @@ class Gui:
                 self.messages.configure(state=DISABLED)
                 return "break"
 
+            elif "->default_theme()" in self.message:
+                self.scrollbar.configure(background=self.original_color_background)
+                self.messages.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.ip_entry.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.port_entry.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.button_connect.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.ip_entry2.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.port_entry2.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.button_bind.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.button_send.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.text_send.configure(background=self.original_color_background, foreground=self.original_color_text)
+
+                self.ip_label.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.port_label.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.ip_label2.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.port_label2.configure(background=self.original_color_background, foreground=self.original_color_text)
+
+                self.frame_bind.configure(background=self.original_color_background)
+                self.frame_connect.configure(background=self.original_color_background)
+
+                self.tip_ip_connect.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.tip_port_connect.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.tip_button_connect.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.tip_ip_bind.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.tip_port_bind.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.tip_button_bind.configure(background=self.original_color_background, foreground=self.original_color_text)
+
+                self.text_send.delete("1.0", "end")
+                self.messages.see(END)
+                self.messages.configure(state=DISABLED)
+                return "break"
+
+            elif "->dark_theme()" in self.message:
+                self.scrollbar.configure(background="#232323")
+                self.messages.configure(background="#232323", foreground="white")
+                self.ip_entry.configure(background="#232323", foreground="white")
+                self.port_entry.configure(background="#232323", foreground="white")
+                self.button_connect.configure(background="#232323", foreground="white")
+                self.ip_entry2.configure(background="#232323", foreground="white")
+                self.port_entry2.configure(background="#232323", foreground="white")
+                self.button_bind.configure(background="#232323", foreground="white")
+                self.button_send.configure(background="#232323", foreground="white")
+                self.text_send.configure(background="#232323", foreground="white")
+
+                self.ip_label.configure(background="#232323", foreground="white")
+                self.port_label.configure(background="#232323", foreground="white")
+                self.ip_label2.configure(background="#232323", foreground="white")
+                self.port_label2.configure(background="#232323", foreground="white")
+
+                self.frame_bind.configure(background="#232323")
+                self.frame_connect.configure(background="#232323")
+
+                self.tip_ip_connect.configure(background="#232323", foreground="white")
+                self.tip_port_connect.configure(background="#232323", foreground="white")
+                self.tip_button_connect.configure(background="#232323", foreground="white")
+                self.tip_ip_bind.configure(background="#232323", foreground="white")
+                self.tip_port_bind.configure(background="#232323", foreground="white")
+                self.tip_button_bind.configure(background="#232323", foreground="white")
+
+                self.text_send.delete("1.0", "end")
+                self.messages.see(END)
+                self.messages.configure(state=DISABLED)
+                return "break"
+
             elif "->tips_off()" in self.message:
                 self.ip_entry.unbind('<FocusIn>')
                 self.ip_entry.unbind('<FocusOut>')
@@ -192,7 +260,7 @@ class Gui:
                 self.button_bind.unbind('<Enter>')
                 self.button_bind.unbind('<Leave>')
 
-                self.messages.insert(INSERT, 'Tips are off.' + "\n")
+                self.messages.insert("end", 'Tips are off.' + "\n")
                 self.messages.see(END)
                 self.messages.configure(state=DISABLED)
                 self.text_send.delete("1.0", "end")
@@ -212,7 +280,7 @@ class Gui:
                 self.button_bind.bind('<Enter>', lambda _: self.tip_button_bind.place(x=160, y=330))
                 self.button_bind.bind('<Leave>', lambda _: self.tip_button_bind.place_forget())
 
-                self.messages.insert(INSERT, 'Tips are on.' + "\n")
+                self.messages.insert("end", 'Tips are on.' + "\n")
                 self.messages.see(END)
                 self.messages.configure(state=DISABLED)
                 self.text_send.delete("1.0", "end")
@@ -240,7 +308,7 @@ class Gui:
 
                 port_forwarding = 'https://www.howtogeek.com/66214/how-to-forward-ports-on-your-router/'
 
-                self.messages.insert(INSERT,
+                self.messages.insert("end",
                                      '\nConnection on your network:\nDefault Loopback address - 127.0.0.1\nLocal network ip address - ' + local_ip + "\n" + "\nConnection on different networks (public):\nPublic ip address -" + public_ip.replace(
                                          '\n',
                                          '') + "\nYou have to configure port forwarding - " + port_forwarding + "\n")
@@ -251,7 +319,7 @@ class Gui:
 
             elif "->help()" in self.message:
                 self.text_send.delete("1.0", "end")
-                webbrowser.open('https://github.com', new=2)
+                webbrowser.open('https://github.com/MartysHD/GUI_chat', new=2)
                 self.messages.see(END)
                 self.messages.configure(state=DISABLED)
                 return "break"
@@ -261,15 +329,15 @@ class Gui:
 
             elif "->commands()" in self.message:
                 self.text_send.delete("1.0", "end")
-                self.messages.insert(INSERT,
-                                     'Special commands that you can use:\n->clear() = Clears the screen\n->tips_off() = Turn all tips off\n->tips_on() = Turn all tips on\n->myip() = Shows your ip addresses\n->help() = Open documentation\n->commands() = Print all commands you can use\n')
+                self.messages.insert("end",
+                                     'Special commands that you can use:\n->clear() = Clears the screen\n->default_theme() = Default color theme\n->dark_theme() = Dark color theme\n->tips_off() = Turn all tips off\n->tips_on() = Turn all tips on\n->myip() = Shows your ip addresses\n->help() = Open documentation\n->commands() = Print all commands you can use\n')
                 self.messages.see(END)
                 self.messages.configure(state=DISABLED)
                 return "break"
 
             else:
                 try:
-                    self.messages.insert(INSERT, self.message + "\n")
+                    self.messages.insert("end", self.message + "\n")
                     self.messages.see(END)
                     self.messages.configure(state=DISABLED)
                     self.text_send.delete("1.0", "end")
@@ -295,6 +363,70 @@ class Gui:
                 self.messages.configure(state=DISABLED)
                 return "break"
 
+            elif "->default_theme()" in self.message:
+                self.scrollbar.configure(background=self.original_color_background)
+                self.messages.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.ip_entry.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.port_entry.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.button_connect.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.ip_entry2.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.port_entry2.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.button_bind.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.button_send.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.text_send.configure(background=self.original_color_background, foreground=self.original_color_text)
+
+                self.ip_label.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.port_label.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.ip_label2.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.port_label2.configure(background=self.original_color_background, foreground=self.original_color_text)
+
+                self.frame_bind.configure(background=self.original_color_background)
+                self.frame_connect.configure(background=self.original_color_background)
+
+                self.tip_ip_connect.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.tip_port_connect.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.tip_button_connect.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.tip_ip_bind.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.tip_port_bind.configure(background=self.original_color_background, foreground=self.original_color_text)
+                self.tip_button_bind.configure(background=self.original_color_background, foreground=self.original_color_text)
+
+                self.text_send.delete("1.0", "end")
+                self.messages.see(END)
+                self.messages.configure(state=DISABLED)
+                return "break"
+
+            elif "->dark_theme()" in self.message:
+                self.scrollbar.configure(background="#232323")
+                self.messages.configure(background="#232323", foreground="white")
+                self.ip_entry.configure(background="#232323", foreground="white")
+                self.port_entry.configure(background="#232323", foreground="white")
+                self.button_connect.configure(background="#232323", foreground="white")
+                self.ip_entry2.configure(background="#232323", foreground="white")
+                self.port_entry2.configure(background="#232323", foreground="white")
+                self.button_bind.configure(background="#232323", foreground="white")
+                self.button_send.configure(background="#232323", foreground="white")
+                self.text_send.configure(background="#232323", foreground="white")
+
+                self.ip_label.configure(background="#232323", foreground="white")
+                self.port_label.configure(background="#232323", foreground="white")
+                self.ip_label2.configure(background="#232323", foreground="white")
+                self.port_label2.configure(background="#232323", foreground="white")
+
+                self.frame_bind.configure(background="#232323")
+                self.frame_connect.configure(background="#232323")
+
+                self.tip_ip_connect.configure(background="#232323", foreground="white")
+                self.tip_port_connect.configure(background="#232323", foreground="white")
+                self.tip_button_connect.configure(background="#232323", foreground="white")
+                self.tip_ip_bind.configure(background="#232323", foreground="white")
+                self.tip_port_bind.configure(background="#232323", foreground="white")
+                self.tip_button_bind.configure(background="#232323", foreground="white")
+
+                self.text_send.delete("1.0", "end")
+                self.messages.see(END)
+                self.messages.configure(state=DISABLED)
+                return "break"
+
             elif "->tips_off()" in self.message:
                 self.ip_entry.unbind('<FocusIn>')
                 self.ip_entry.unbind('<FocusOut>')
@@ -309,7 +441,7 @@ class Gui:
                 self.button_bind.unbind('<Enter>')
                 self.button_bind.unbind('<Leave>')
 
-                self.messages.insert(INSERT, 'Tips are off.' + "\n")
+                self.messages.insert("end", 'Tips are off.' + "\n")
                 self.messages.see(END)
                 self.messages.configure(state=DISABLED)
                 self.text_send.delete("1.0", "end")
@@ -329,7 +461,7 @@ class Gui:
                 self.button_bind.bind('<Enter>', lambda _: self.tip_button_bind.place(x=160, y=330))
                 self.button_bind.bind('<Leave>', lambda _: self.tip_button_bind.place_forget())
 
-                self.messages.insert(INSERT, 'Tips are on.' + "\n")
+                self.messages.insert("end", 'Tips are on.' + "\n")
                 self.messages.see(END)
                 self.messages.configure(state=DISABLED)
                 self.text_send.delete("1.0", "end")
@@ -357,7 +489,7 @@ class Gui:
 
                 port_forwarding = 'https://www.howtogeek.com/66214/how-to-forward-ports-on-your-router/'
 
-                self.messages.insert(INSERT, '\nConnection on your network:\nDefault Loopback address - 127.0.0.1\nLocal network ip address - ' + local_ip + "\n" + "\nConnection on different networks (public):\nPublic ip address -" + public_ip.replace('\n', '') + "\nYou have to configure port forwarding - " + port_forwarding + "\n")
+                self.messages.insert("end", '\nConnection on your network:\nDefault Loopback address - 127.0.0.1\nLocal network ip address - ' + local_ip + "\n" + "\nConnection on different networks (public):\nPublic ip address -" + public_ip.replace('\n', '') + "\nYou have to configure port forwarding - " + port_forwarding + "\n")
                 self.messages.see(END)
                 self.messages.configure(state=DISABLED)
                 self.text_send.delete("1.0", "end")
@@ -365,22 +497,22 @@ class Gui:
 
             elif "->help()" in self.message:
                 self.text_send.delete("1.0", "end")
-                webbrowser.open('https://github.com', new=2)
+                webbrowser.open('https://github.com/MartysHD/GUI_chat', new=2)
                 self.messages.see(END)
                 self.messages.configure(state=DISABLED)
                 return "break"
 
             elif "->commands()" in self.message:
                 self.text_send.delete("1.0", "end")
-                self.messages.insert(INSERT,
-                                     'Special commands that you can use:\n->clear() = Clears the screen\n->tips_off() = Turn all tips off\n->tips_on() = Turn all tips on\n->myip() = Shows your ip addresses\n->help() = Open documentation\n->commands() = Print all commands you can use\n')
+                self.messages.insert("end",
+                                     'Special commands that you can use:\n->clear() = Clears the screen\n->default_theme() = Default color theme\n->dark_theme() = Dark color theme\n->tips_off() = Turn all tips off\n->tips_on() = Turn all tips on\n->myip() = Shows your ip addresses\n->help() = Open documentation\n->commands() = Print all commands you can use\n')
                 self.messages.see(END)
                 self.messages.configure(state=DISABLED)
                 return "break"
 
             else:
                 try:
-                    self.messages.insert(INSERT, self.message + "\n")
+                    self.messages.insert("end", self.message + "\n")
                     self.messages.see(END)
                     self.messages.configure(state=DISABLED)
                     self.text_send.delete("1.0", "end")
@@ -423,7 +555,7 @@ class Gui:
                     time.sleep(1)
 
                     self.messages.configure(state=NORMAL)
-                    self.messages.insert(INSERT, 'Socket is bind.\n')
+                    self.messages.insert("end", 'Socket is bind.\n')
                     self.messages.see(END)
                     self.messages.configure(state=DISABLED)
 
@@ -436,8 +568,8 @@ class Gui:
                         self.port_list.add(str(port))
 
                         self.messages.configure(state=NORMAL)
-                        self.messages.insert(INSERT, 'Starting listening for connections.\n')
-                        self.messages.insert(INSERT, 'Waiting for connection on port ' + str(port) + ' on ' + str(
+                        self.messages.insert("end", 'Starting listening for connections.\n')
+                        self.messages.insert("end", 'Waiting for connection on port ' + str(port) + ' on ' + str(
                             ip) + ' ip address.\n')
                         self.messages.see(END)
                         self.messages.configure(state=DISABLED)
@@ -454,7 +586,7 @@ class Gui:
 
                             self.messages.configure(state=NORMAL)
                             self.messages.delete("1.0", "end")
-                            self.messages.insert(INSERT, 'Connection established from ' + str(address) + '.\n')
+                            self.messages.insert("end", 'Connection established from ' + str(address) + '.\n')
                             self.messages.see(END)
                             self.messages.configure(state=DISABLED)
 
@@ -462,14 +594,14 @@ class Gui:
                             data = b_data.recv(1024)
                             if data:
                                 self.messages.configure(state=NORMAL)
-                                self.messages.insert(INSERT, data.decode('utf-8') + '\n')
+                                self.messages.insert("end", data.decode('utf-8') + '\n')
                                 self.messages.see(END)
                                 self.messages.configure(state=DISABLED)
 
                             else:
                                 self.messages.configure(state=NORMAL)
-                                self.messages.insert(INSERT, 'Disconnected.' + '\n')
-                                self.messages.insert(INSERT, 'Connection is over.' + '\n')
+                                self.messages.insert("end", 'Disconnected.' + '\n')
+                                self.messages.insert("end", 'Connection is over.' + '\n')
                                 self.messages.see(END)
                                 self.messages.configure(state=DISABLED)
 
@@ -486,7 +618,7 @@ class Gui:
                         self.s_bind.close()
 
                         self.messages.configure(state=NORMAL)
-                        self.messages.insert(INSERT, 'Socket closed.\n')
+                        self.messages.insert("end", 'Socket closed.\n')
                         self.messages.see(END)
                         self.messages.configure(state=DISABLED)
 
@@ -567,7 +699,7 @@ class Gui:
 
                     self.messages.configure(state=NORMAL)
                     self.messages.delete('1.0', 'end')
-                    self.messages.insert(INSERT, 'Messages are now send.\n')
+                    self.messages.insert("end", 'Messages are now send.\n')
                     self.messages.see(END)
                     self.messages.configure(state=DISABLED)
 
@@ -576,7 +708,7 @@ class Gui:
 
         except ConnectionRefusedError:
             self.messages.configure(state=NORMAL)
-            self.messages.insert(INSERT, 'Nobody is listening for connection on this parameters.\n')
+            self.messages.insert("end", 'Nobody is listening for connection on this parameters.\n')
             self.messages.see(END)
             self.messages.configure(state=DISABLED)
 
@@ -592,8 +724,8 @@ class Gui:
         time.sleep(0.2)
 
         self.messages.configure(state=NORMAL)
-        self.messages.insert(INSERT, 'Disconnected.' + '\n')
-        self.messages.insert(INSERT, 'Connection is over.' + '\n')
+        self.messages.insert("end", 'Disconnected.' + '\n')
+        self.messages.insert("end", 'Connection is over.' + '\n')
         self.messages.see(END)
         self.messages.configure(state=DISABLED)
 
